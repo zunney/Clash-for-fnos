@@ -1,0 +1,80 @@
+name: Sync upstream and FnDepot
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+      - name: Merge upstream without overwriting fork changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add upstream https://github.com/chenpingonline/Clash-for-fnos.git
+          git fetch upstream master
+          git merge --no-edit upstream/master
+      - name: Refresh FnDepot release index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, re, urllib.parse, urllib.request
+          from pathlib import Path
+          base = 'https://api.github.com/repos/chenpingonline/Clash-for-fnos'
+          def api(path):
+              req = urllib.request.Request(base + path, headers={
+                  'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+                  'Accept': 'application/vnd.github+json',
+                  'User-Agent': 'FnDepot-sync'})
+              with urllib.request.urlopen(req, timeout=60) as response:
+                  return json.load(response)
+          release = api('/releases/latest')
+          version = release['tag_name'].removeprefix('v')
+          if not re.fullmatch(r'[0-9]+[.][0-9]+[.][0-9]+', version):
+              raise ValueError('Unsupported stable release version: ' + version)
+          packages = {}
+          for arch, suffix in [('x86', '_x86_64.fpk'), ('arm', '_arm64.fpk')]:
+              matches = [a for a in release['assets'] if a['name'].endswith(suffix)]
+              if len(matches) != 1:
+                  raise ValueError('Expected exactly one asset for ' + arch)
+              asset = matches[0]
+              digest = asset.get('digest') or ''
+              if not re.fullmatch(r'sha256:[0-9a-f]{64}', digest):
+                  raise ValueError('Missing SHA-256 for ' + asset['name'])
+              packages[arch] = {'download_url': asset['browser_download_url'],
+                                'sha256': digest.split(':', 1)[1], 'size': asset['size']}
+          path = Path('fnpack.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          app = data['apps']['clash-for-fnos']
+          manifest_info = api('/contents/fpk/manifest?ref=' + urllib.parse.quote(release['tag_name'], safe=''))
+          manifest = base64.b64decode(manifest_info['content']).decode('utf-8')
+          minimum = re.search(r'^os_min_version\s*=\s*(\S+)', manifest, re.M)
+          entry = {'updated_at': release['published_at'], 'packages': packages}
+          if minimum:
+              entry['os_min_version'] = minimum.group(1)
+          app['releases'][version] = entry
+          app['platform'] = ['x86', 'arm']
+          # Pin the icon to a real commit resolved from the release tag.
+          tag = api('/commits/' + urllib.parse.quote(release['tag_name'], safe=''))
+          app['icon_url'] = 'https://raw.githubusercontent.com/chenpingonline/Clash-for-fnos/' + tag['sha'] + '/fpk/ICON.PNG'
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print('FnDepot release:', version)
+          PY
+      - name: Commit index and push synchronized branch
+        run: |
+          git add fnpack.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update FnDepot index from upstream release'
+          fi
+          git push origin HEAD:master
