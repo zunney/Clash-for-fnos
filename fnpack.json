@@ -9,8 +9,13 @@
     "clash-for-fnos": {
       "display_name": "Clash for fnOS",
       "desc": "飞牛 fnOS 原生 Mihomo / Clash 管理器，支持订阅、节点切换、规则和日志。需自行准备订阅或配置。",
-      "platform": ["x86", "arm"],
-      "categories": ["系统工具"],
+      "platform": [
+        "x86",
+        "arm"
+      ],
+      "categories": [
+        "系统工具"
+      ],
       "icon_url": "https://raw.githubusercontent.com/chenpingonline/Clash-for-fnos/4863e5f4f8251f196155801a460b8f3c131ee601/fpk/ICON.PNG",
       "maintainer": "chenping",
       "maintainer_url": "https://github.com/chenpingonline/Clash-for-fnos",
@@ -19,7 +24,7 @@
       "is_docker": false,
       "releases": {
         "1.5.5": {
-          "os_min_version": "1.1.3100",
+          "updated_at": "2026-10-15T12:43:58Z",
           "packages": {
             "x86": {
               "download_url": "https://github.com/chenpingonline/Clash-for-fnos/releases/download/v1.5.5/Clash.for.fnos_1.5.5_x86_64.fpk",
@@ -31,7 +36,8 @@
               "sha256": "8d9b8a173bbe43417d5ff63a98b03c442256c8467708855b76d5b86565455d43",
               "size": 41774526
             }
-          }
+          },
+          "os_min_version": "1.1.3100"
         }
       }
     }
