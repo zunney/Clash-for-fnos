@@ -1,0 +1,39 @@
+{
+  "schema_version": "2",
+  "source_info": {
+    "name": "zunney 的 Clash 应用源",
+    "author": "zunney",
+    "homepage": "https://github.com/zunney/Clash-for-fnos"
+  },
+  "apps": {
+    "clash-for-fnos": {
+      "display_name": "Clash for fnOS",
+      "desc": "飞牛 fnOS 原生 Mihomo / Clash 管理器，支持订阅、节点切换、规则和日志。需自行准备订阅或配置。",
+      "platform": ["x86", "arm"],
+      "categories": ["系统工具"],
+      "icon_url": "https://raw.githubusercontent.com/chenpingonline/Clash-for-fnos/4863e5f4f8251f196155801a460b8f3c131ee601/fpk/ICON.PNG",
+      "maintainer": "chenping",
+      "maintainer_url": "https://github.com/chenpingonline/Clash-for-fnos",
+      "run_as": "root",
+      "install_type": "",
+      "is_docker": false,
+      "releases": {
+        "1.5.5": {
+          "os_min_version": "1.1.3100",
+          "packages": {
+            "x86": {
+              "download_url": "https://github.com/chenpingonline/Clash-for-fnos/releases/download/v1.5.5/Clash.for.fnos_1.5.5_x86_64.fpk",
+              "sha256": "1f5c18df64c67df4ded5f205731a8abbd46e2fe8da26b558406667f77c46026c",
+              "size": 44956031
+            },
+            "arm": {
+              "download_url": "https://github.com/chenpingonline/Clash-for-fnos/releases/download/v1.5.5/Clash.for.fnos_1.5.5_arm64.fpk",
+              "sha256": "8d9b8a173bbe43417d5ff63a98b03c442256c8467708855b76d5b86565455d43",
+              "size": 41774526
+            }
+          }
+        }
+      }
+    }
+  }
+}
